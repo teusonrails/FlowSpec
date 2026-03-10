@@ -45,6 +45,33 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* FlowSpec domain colors */
+  --color-domain-finance: #10b981;
+  --color-domain-sales: #f59e0b;
+  --color-domain-support: #3b82f6;
+  --color-domain-marketing: #ec4899;
+  --color-domain-operations: #8b5cf6;
+  --color-domain-hr: #f97316;
+  --color-domain-legal: #6366f1;
+  --color-domain-ecommerce: #14b8a6;
+  --color-domain-real-estate: #a855f7;
+  --color-domain-healthcare: #ef4444;
+  --color-domain-education: #06b6d4;
+  --color-domain-logistics: #84cc16;
+  --color-domain-devops: #64748b;
+  --color-domain-data: #2563eb;
+  --color-domain-general: #6b7280;
+
+  /* Complexity colors */
+  --color-complexity-basic: #10b981;
+  --color-complexity-intermediate: #f59e0b;
+  --color-complexity-advanced: #ef4444;
+
+  /* Tier colors */
+  --color-tier-free: #6b7280;
+  --color-tier-open: #3b82f6;
+  --color-tier-curated: #f59e0b;
 }
 
 :root {
