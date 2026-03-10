@@ -5,8 +5,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function makePrismaClient() {
-  // @ts-expect-error -- Prisma v7 Prisma Postgres driver may require adapter config at runtime
-  return new PrismaClient();
+  return new PrismaClient({
+    accelerateUrl: process.env.DATABASE_URL!,
+  });
 }
 
 export const prisma = globalForPrisma.prisma ?? makePrismaClient();
