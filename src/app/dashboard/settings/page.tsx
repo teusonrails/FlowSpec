@@ -1,11 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { requireAuth } from "@/lib/auth/session";
+import { ProfileForm } from "@/components/dashboard/profile-form";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Settings - FlowSpec",
 };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const user = await requireAuth();
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Settings</h1>
@@ -14,14 +19,13 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>Profile</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Manage your account settings and profile information.
-          </p>
-          <Separator />
-          <p className="text-sm text-muted-foreground">
-            Profile editing will be available once connected to the database.
-          </p>
+        <CardContent>
+          <ProfileForm
+            defaultValues={{
+              name: user.name ?? "",
+              email: user.email,
+            }}
+          />
         </CardContent>
       </Card>
     </div>
