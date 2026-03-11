@@ -1,0 +1,344 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────────
+// USERS & AUTH
+// ──────────────────────────────────────────────
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  name           String?
+  avatarUrl      String?  @map("avatar_url")
+  role           UserRole @default(BUYER)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Supabase Auth link
+  supabaseAuthId String @unique @map("supabase_auth_id")
+
+  // Relations
+  creatorProfile CreatorProfile?
+  purchases      Purchase[]
+  reviews        Review[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  BUYER
+  CREATOR
+  ADMIN
+}
+
+model CreatorProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique @map("user_id")
+  displayName     String   @map("display_name")
+  bio             String?
+  website         String?
+  githubUrl       String?  @map("github_url")
+  twitterUrl      String?  @map("twitter_url")
+  stripeAccountId String?  @map("stripe_account_id")
+  isVerified      Boolean  @default(false) @map("is_verified")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  automations Automation[]
+
+  @@map("creator_profiles")
+}
+
+// ──────────────────────────────────────────────
+// AUTOMATIONS (Core entity)
+// ──────────────────────────────────────────────
+
+model Automation {
+  id              String           @id @default(uuid())
+  slug            String           @unique
+  creatorId       String           @map("creator_id")
+  status          AutomationStatus @default(DRAFT)
+  tier            AutomationTier   @default(OPEN)
+
+  // Header metadata
+  name            String
+  description     String
+  longDescription String?          @map("long_description")
+  version         String           @default("1.0.0")
+  domain          Domain
+  complexity      Complexity
+  setupTime       Int?             @map("setup_time")
+  successRate     Float?           @map("success_rate")
+
+  // Pricing (cents)
+  priceStarter Int? @map("price_starter")
+  pricePro     Int? @map("price_pro")
+  priceAgency  Int? @map("price_agency")
+
+  // Package file
+  packageUrl      String? @map("package_url")
+  packageSize     Int?    @map("package_size")
+  flowspecContent String? @map("flowspec_content") @db.Text
+
+  // Validation
+  validationScore Int?  @map("validation_score")
+  validationLog   Json? @map("validation_log")
+
+  // Stats (denormalized for performance)
+  totalSales    Int   @default(0) @map("total_sales")
+  totalRevenue  Int   @default(0) @map("total_revenue")
+  avgRating     Float @default(0) @map("avg_rating")
+  reviewCount   Int   @default(0) @map("review_count")
+  downloadCount Int   @default(0) @map("download_count")
+  viewCount     Int   @default(0) @map("view_count")
+
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  // Relations
+  creator   CreatorProfile      @relation(fields: [creatorId], references: [id])
+  platforms AutomationPlatform[]
+  tools     AutomationTool[]
+  aiModels  AutomationAiModel[]
+  reviews   Review[]
+  purchases Purchase[]
+  tags      AutomationTag[]
+
+  @@index([domain])
+  @@index([complexity])
+  @@index([status])
+  @@index([tier])
+  @@index([avgRating])
+  @@index([totalSales])
+  @@index([publishedAt])
+  @@index([creatorId])
+  @@map("automations")
+}
+
+enum AutomationStatus {
+  DRAFT
+  PENDING_REVIEW
+  VALIDATED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum AutomationTier {
+  FREE
+  OPEN
+  CURATED
+}
+
+enum Domain {
+  FINANCE
+  SALES
+  SUPPORT
+  MARKETING
+  OPERATIONS
+  HR
+  LEGAL
+  ECOMMERCE
+  REAL_ESTATE
+  HEALTHCARE
+  EDUCATION
+  LOGISTICS
+  DEVOPS
+  DATA
+  GENERAL
+}
+
+enum Complexity {
+  BASIC
+  INTERMEDIATE
+  ADVANCED
+}
+
+// ──────────────────────────────────────────────
+// MANY-TO-MANY RELATIONS
+// ──────────────────────────────────────────────
+
+model Platform {
+  id          String               @id @default(uuid())
+  name        String               @unique
+  slug        String               @unique
+  iconUrl     String?              @map("icon_url")
+  automations AutomationPlatform[]
+
+  @@map("platforms")
+}
+
+model AutomationPlatform {
+  automationId String     @map("automation_id")
+  platformId   String     @map("platform_id")
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  platform     Platform   @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@id([automationId, platformId])
+  @@map("automation_platforms")
+}
+
+model Tool {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  slug        String           @unique
+  category    String?
+  iconUrl     String?          @map("icon_url")
+  automations AutomationTool[]
+
+  @@map("tools")
+}
+
+model AutomationTool {
+  automationId String     @map("automation_id")
+  toolId       String     @map("tool_id")
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  tool         Tool       @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  @@id([automationId, toolId])
+  @@map("automation_tools")
+}
+
+model AiModel {
+  id          String              @id @default(uuid())
+  name        String              @unique
+  provider    String
+  automations AutomationAiModel[]
+
+  @@map("ai_models")
+}
+
+model AutomationAiModel {
+  automationId String     @map("automation_id")
+  aiModelId    String     @map("ai_model_id")
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  aiModel      AiModel    @relation(fields: [aiModelId], references: [id], onDelete: Cascade)
+
+  @@id([automationId, aiModelId])
+  @@map("automation_ai_models")
+}
+
+model Tag {
+  id          String          @id @default(uuid())
+  name        String          @unique
+  slug        String          @unique
+  automations AutomationTag[]
+
+  @@map("tags")
+}
+
+model AutomationTag {
+  automationId String     @map("automation_id")
+  tagId        String     @map("tag_id")
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  tag          Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([automationId, tagId])
+  @@map("automation_tags")
+}
+
+// ──────────────────────────────────────────────
+// PURCHASES & PAYMENTS
+// ──────────────────────────────────────────────
+
+model Purchase {
+  id               String         @id @default(uuid())
+  buyerId          String         @map("buyer_id")
+  automationId     String         @map("automation_id")
+  tier             PurchaseTier
+  amountPaid       Int            @map("amount_paid")
+  platformFee      Int            @map("platform_fee")
+  creatorEarnings  Int            @map("creator_earnings")
+  currency         String         @default("usd")
+  stripePaymentId  String?        @map("stripe_payment_id")
+  stripeSessionId  String?        @map("stripe_session_id")
+  status           PurchaseStatus @default(COMPLETED)
+  downloadCount    Int            @default(0) @map("download_count")
+  lastDownloadedAt DateTime?      @map("last_downloaded_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  // Relations
+  buyer      User       @relation(fields: [buyerId], references: [id])
+  automation Automation @relation(fields: [automationId], references: [id])
+
+  @@unique([buyerId, automationId])
+  @@index([buyerId])
+  @@index([automationId])
+  @@map("purchases")
+}
+
+enum PurchaseTier {
+  FREE
+  STARTER
+  PRO
+  AGENCY
+}
+
+enum PurchaseStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  DISPUTED
+}
+
+// ──────────────────────────────────────────────
+// REVIEWS
+// ──────────────────────────────────────────────
+
+model Review {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  automationId String   @map("automation_id")
+  rating       Int
+  title        String?
+  body         String?  @db.Text
+  isVerified   Boolean  @default(true) @map("is_verified")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id])
+  automation Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, automationId])
+  @@index([automationId])
+  @@map("reviews")
+}
+
+// ──────────────────────────────────────────────
+// CREATOR PAYOUTS
+// ──────────────────────────────────────────────
+
+model Payout {
+  id             String       @id @default(uuid())
+  creatorId      String       @map("creator_id")
+  amount         Int
+  currency       String       @default("usd")
+  status         PayoutStatus @default(PENDING)
+  stripePayoutId String?      @map("stripe_payout_id")
+  periodStart    DateTime     @map("period_start")
+  periodEnd      DateTime     @map("period_end")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  paidAt         DateTime?    @map("paid_at")
+
+  @@index([creatorId])
+  @@map("payouts")
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
