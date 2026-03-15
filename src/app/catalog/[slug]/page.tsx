@@ -24,6 +24,10 @@ import { ComplexityBadge } from "@/components/shared/complexity-badge";
 import { DomainBadge } from "@/components/shared/domain-badge";
 import { PriceBadge } from "@/components/shared/price-badge";
 import { getAutomationBySlug } from "@/lib/data/automations";
+import { getCurrentUser } from "@/lib/auth/session";
+import { hasPurchased } from "@/lib/data/purchases";
+import { hasReviewed } from "@/lib/data/reviews";
+import { ReviewForm } from "@/components/catalog/review-form";
 import { formatPrice, formatDate, formatNumber } from "@/lib/utils/format";
 import { TIER_CONFIG } from "@/lib/utils/constants";
 
@@ -49,6 +53,12 @@ export default async function AutomationDetailPage({ params }: PageProps) {
   const automation = await getAutomationBySlug(slug);
 
   if (!automation) notFound();
+
+  const user = await getCurrentUser();
+  const canReview =
+    user &&
+    (await hasPurchased(user.id, automation.id)) &&
+    !(await hasReviewed(user.id, automation.id));
 
   const creatorInitials = automation.creator.displayName
     .split(" ")
@@ -183,6 +193,13 @@ export default async function AutomationDetailPage({ params }: PageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {canReview && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium mb-3">Write a Review</h3>
+                  <ReviewForm automationId={automation.id} />
+                  <Separator className="mt-6" />
+                </div>
+              )}
               {automation.reviews.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   No reviews yet.
