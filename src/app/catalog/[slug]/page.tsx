@@ -24,10 +24,12 @@ import { ComplexityBadge } from "@/components/shared/complexity-badge";
 import { DomainBadge } from "@/components/shared/domain-badge";
 import { PriceBadge } from "@/components/shared/price-badge";
 import { getAutomationBySlug } from "@/lib/data/automations";
+import { prisma } from "@/lib/prisma/client";
 import { getCurrentUser } from "@/lib/auth/session";
 import { hasPurchased } from "@/lib/data/purchases";
 import { hasReviewed } from "@/lib/data/reviews";
 import { ReviewForm } from "@/components/catalog/review-form";
+import { PurchaseSection } from "@/components/catalog/purchase-section";
 import { formatPrice, formatDate, formatNumber } from "@/lib/utils/format";
 import { TIER_CONFIG } from "@/lib/utils/constants";
 
@@ -296,9 +298,27 @@ export default async function AutomationDetailPage({ params }: PageProps) {
                 )}
               </div>
 
-              <Button className="w-full" size="lg">
-                {automation.tier === "FREE" ? "Download Free" : "Purchase"}
-              </Button>
+              <PurchaseSection
+                automationId={automation.id}
+                slug={automation.slug}
+                priceStarter={automation.priceStarter}
+                pricePro={automation.pricePro}
+                priceAgency={automation.priceAgency}
+                tier={automation.tier}
+                hasPurchased={
+                  !!user &&
+                  !!(await prisma.purchase.findUnique({
+                    where: {
+                      buyerId_automationId: {
+                        buyerId: user.id,
+                        automationId: automation.id,
+                      },
+                    },
+                    select: { id: true },
+                  }))
+                }
+                isAuthenticated={!!user}
+              />
 
               <Separator />
 
