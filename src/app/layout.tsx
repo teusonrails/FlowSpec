@@ -19,9 +19,25 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "FlowSpec - AI Automation Marketplace",
+  title: {
+    default: "FlowSpec Marketplace — AI Automations, Ready to Deploy",
+    template: "%s | FlowSpec Marketplace",
+  },
   description:
-    "Discover, buy, and sell AI automation workflows. The marketplace for production-ready automation specs.",
+    "Discover, purchase, and deploy ready-to-implement AI automation workflows. Browse hundreds of documented, tested automations for n8n, Make, Zapier, and more.",
+  openGraph: {
+    type: "website",
+    siteName: "FlowSpec Marketplace",
+    title: "FlowSpec Marketplace",
+    description: "AI Automations, Ready to Deploy",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
