@@ -261,8 +261,17 @@ export async function archiveAutomation(automationId: string) {
 export async function adminUpdateStatus(
   automationId: string,
   status: AutomationStatus
-) {
+): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
+
+  const existing = await prisma.automation.findUnique({
+    where: { id: automationId },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    return { success: false, error: "Automation not found" };
+  }
 
   const data: Record<string, unknown> = { status };
   if (status === "PUBLISHED") {
