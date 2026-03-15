@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { requireCreator } from "@/lib/auth/session";
 import { getCreatorEarnings } from "@/lib/data/creators";
 import { formatPrice } from "@/lib/utils/format";
 import { prisma } from "@/lib/prisma/client";
+import { StripeConnectCard } from "@/components/dashboard/stripe-connect-card";
 
 export const dynamic = "force-dynamic";
 
@@ -24,39 +24,23 @@ export default async function PayoutsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Payouts</h1>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Total Earnings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {formatPrice(earnings.totalEarnings)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Stripe Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge
-              variant={creatorProfile?.stripeAccountId ? "default" : "secondary"}
-            >
-              {creatorProfile?.stripeAccountId ? "Connected" : "Not Connected"}
-            </Badge>
-            {!creatorProfile?.stripeAccountId && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Connect your Stripe account to receive payouts.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <StripeConnectCard
+        stripeAccountId={creatorProfile?.stripeAccountId ?? null}
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">
+            {formatPrice(earnings.totalEarnings)}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            From {earnings.totalSales} sales
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

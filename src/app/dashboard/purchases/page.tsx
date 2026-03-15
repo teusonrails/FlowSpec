@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Star } from "lucide-react";
+import { Star } from "lucide-react";
+import { DownloadButton } from "@/components/dashboard/download-button";
 import { requireAuth } from "@/lib/auth/session";
 import { getBuyerPurchases } from "@/lib/data/purchases";
 import { formatPrice, formatDate } from "@/lib/utils/format";
@@ -65,12 +66,7 @@ export default async function PurchasesPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={`/api/automations/${purchase.automation.id}/download`}>
-                        <Download className="mr-1.5 h-4 w-4" />
-                        Download
-                      </a>
-                    </Button>
+                    <DownloadButton automationId={purchase.automation.id} />
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/catalog/${purchase.automation.slug}`}>
                         <Star className="mr-1.5 h-4 w-4" />
