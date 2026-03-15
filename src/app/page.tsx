@@ -1,13 +1,41 @@
 import Link from "next/link";
-import { ArrowRight, Zap, Users, Package, Star } from "lucide-react";
+import { ArrowRight, Zap, Users, Package, Star, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { prisma } from "@/lib/prisma/client";
+import { AutomationGrid } from "@/components/catalog/automation-grid";
+import { DOMAIN_CONFIG } from "@/lib/utils/constants";
+import type { Domain } from "@/generated/prisma";
 
-const stats = [
-  { label: "Automations", value: "250+", icon: Package },
-  { label: "Creators", value: "50+", icon: Users },
-  { label: "Avg Rating", value: "4.8", icon: Star },
-];
+export const dynamic = "force-dynamic";
+
+const automationCardSelect = {
+  id: true,
+  slug: true,
+  name: true,
+  description: true,
+  domain: true,
+  complexity: true,
+  tier: true,
+  priceStarter: true,
+  pricePro: true,
+  priceAgency: true,
+  avgRating: true,
+  reviewCount: true,
+  totalSales: true,
+  creator: {
+    select: {
+      id: true,
+      displayName: true,
+      user: { select: { avatarUrl: true } },
+    },
+  },
+  platforms: {
+    select: {
+      platform: { select: { name: true, slug: true, iconUrl: true } },
+    },
+  },
+} as const;
 
 const features = [
   {
@@ -32,7 +60,44 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [automationCount, creatorCount, totalDownloads, featuredAutomations] =
+    await Promise.all([
+      prisma.automation.count({ where: { status: "PUBLISHED" } }),
+      prisma.creatorProfile.count({
+        where: { automations: { some: { status: "PUBLISHED" } } },
+      }),
+      prisma.automation.aggregate({
+        where: { status: "PUBLISHED" },
+        _sum: { totalSales: true },
+      }),
+      prisma.automation.findMany({
+        where: { status: "PUBLISHED" },
+        select: automationCardSelect,
+        orderBy: { totalSales: "desc" },
+        take: 6,
+      }),
+    ]);
+
+  const stats = [
+    { label: "Automations", value: automationCount.toString(), icon: Package },
+    { label: "Creators", value: creatorCount.toString(), icon: Users },
+    {
+      label: "Downloads",
+      value: (totalDownloads._sum.totalSales ?? 0).toString(),
+      icon: Download,
+    },
+  ];
+
+  // Get domain counts for browse-by-domain
+  const domainCounts = await prisma.automation.groupBy({
+    by: ["domain"],
+    where: { status: "PUBLISHED" },
+    _count: true,
+    orderBy: { _count: { domain: "desc" } },
+    take: 8,
+  });
+
   return (
     <div className="flex flex-col">
       {/* Hero */}
@@ -58,7 +123,7 @@ export default function HomePage() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/register">Become a Creator</Link>
+              <Link href="/dashboard/become-creator">Become a Creator</Link>
             </Button>
           </div>
         </div>
@@ -82,6 +147,53 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Browse by Domain */}
+      {domainCounts.length > 0 && (
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl font-bold text-center mb-8">
+              Browse by Domain
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {domainCounts.map((d) => (
+                <Link
+                  key={d.domain}
+                  href={`/catalog?domain=${d.domain.toLowerCase()}`}
+                >
+                  <Card className="hover:border-primary/50 transition-colors">
+                    <CardContent className="py-4 text-center">
+                      <p className="font-medium">
+                        {DOMAIN_CONFIG[d.domain as Domain]?.label ?? d.domain}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {d._count} automation{d._count !== 1 ? "s" : ""}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Automations */}
+      {featuredAutomations.length > 0 && (
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold">Popular Automations</h2>
+              <Button variant="ghost" asChild>
+                <Link href="/catalog">
+                  View all <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+            <AutomationGrid automations={featuredAutomations} />
+          </div>
+        </section>
+      )}
 
       {/* Features */}
       <section className="py-20">
