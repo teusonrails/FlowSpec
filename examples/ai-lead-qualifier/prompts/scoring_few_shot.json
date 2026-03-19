@@ -1,0 +1,83 @@
+[
+  {
+    "input": {
+      "lead_name": "Ricardo Ferreira",
+      "lead_email": "ricardo@cloudops.com.br",
+      "company_name": "CloudOps Brasil",
+      "lead_message": "We're evaluating automation tools for our sales pipeline. Currently using HubSpot but need better lead scoring. Budget approved for Q2.",
+      "source": "website-pricing-page",
+      "company_data_summary": "CloudOps Brasil builds cloud infrastructure management tools for mid-market companies in Latin America. ~50 employees across São Paulo and Belo Horizonte. Series A funded in 2024. Tech stack: React, Python, AWS. Recent blog post about scaling their sales team from 5 to 15 reps."
+    },
+    "expected_output": {
+      "dimensions": {
+        "company_size": 9,
+        "industry_fit": 9,
+        "role_fit": 7,
+        "intent_signals": 10,
+        "budget_indicators": 9
+      },
+      "composite_score": 44,
+      "tier": "HOT",
+      "industry_assessment": "B2B SaaS — Cloud Infrastructure",
+      "size_estimate": "~50 employees (Series A, scaling)",
+      "summary_rationale": "Excellent ICP match. CloudOps is a B2B SaaS company with 50 employees in LATAM — exactly our target segment. The lead explicitly mentions evaluating automation tools with approved budget, and they already use HubSpot, indicating sales tech sophistication. The growing sales team (5→15) creates immediate need for lead scoring automation.",
+      "suggested_email_angle": "Reference their sales team growth (5 to 15 reps) and how lead scoring automation becomes critical at that scale. Mention HubSpot integration capability since they already use it.",
+      "company_insights": "CloudOps Brasil builds cloud infrastructure management tools for mid-market LATAM companies. ~50 person team, Series A funded, rapidly scaling their sales organization."
+    },
+    "notes": "HOT lead example: perfect ICP match with explicit buying intent, approved budget, and rich company data from website."
+  },
+  {
+    "input": {
+      "lead_name": "Lucia Navarro",
+      "lead_email": "lucia@navarro-consulting.es",
+      "company_name": "Navarro Consulting",
+      "lead_message": "",
+      "source": "linkedin-ad",
+      "company_data_summary": "Navarro Consulting is a management consulting firm based in Madrid. Website mentions 'boutique consultancy' with focus on digital transformation for retail clients. No employee count visible. Founded 2019."
+    },
+    "expected_output": {
+      "dimensions": {
+        "company_size": 5,
+        "industry_fit": 6,
+        "role_fit": 7,
+        "intent_signals": 4,
+        "budget_indicators": 5
+      },
+      "composite_score": 27,
+      "tier": "WARM",
+      "industry_assessment": "Professional Services — Management Consulting",
+      "size_estimate": "5-20 employees (boutique consultancy)",
+      "summary_rationale": "Moderate ICP match. Navarro Consulting is in professional services (adjacent to our target), likely small (boutique), and the lead came from a LinkedIn ad without a message — weak intent signal. The consulting focus on digital transformation suggests tech-awareness, but no explicit need for our product was stated.",
+      "suggested_email_angle": "Position as a tool that helps consultancies deliver more value to their retail clients — automation as a service they can offer or use internally to scale without hiring.",
+      "company_insights": "Navarro Consulting is a boutique management consultancy in Madrid focused on digital transformation for retail clients. Founded 2019."
+    },
+    "notes": "WARM lead example: adjacent industry, unknown size, no message (weak intent), but professional domain and LinkedIn source suggest legitimate interest."
+  },
+  {
+    "input": {
+      "lead_name": "Pedro Almeida",
+      "lead_email": "pedro.almeida97@gmail.com",
+      "company_name": "",
+      "lead_message": "",
+      "source": "blog-post",
+      "company_data_summary": "No company data available — email uses a generic domain (Gmail). Score conservatively."
+    },
+    "expected_output": {
+      "dimensions": {
+        "company_size": 3,
+        "industry_fit": 3,
+        "role_fit": 3,
+        "intent_signals": 3,
+        "budget_indicators": 2
+      },
+      "composite_score": 14,
+      "tier": "COLD",
+      "industry_assessment": "Unknown — personal email",
+      "size_estimate": "Unknown — no company identified",
+      "summary_rationale": "Low qualification. Gmail address with no company information, no message, and source is a blog post — likely a content reader rather than a potential buyer. The '97' in the email may suggest a younger individual (born 1997), possibly a student or early-career professional. No budget indicators.",
+      "suggested_email_angle": "N/A — cold lead, no email recommended",
+      "company_insights": "No company identified. Personal Gmail account, likely an individual reader of our blog content."
+    },
+    "notes": "COLD lead example: generic email, no company, no message, blog source. Demonstrates conservative scoring when data is absent."
+  }
+]
